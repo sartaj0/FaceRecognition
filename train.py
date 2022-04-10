@@ -1,6 +1,10 @@
+import os
+import cv2
 import argparse
 import numpy as np
 from tqdm import tqdm
+import matplotlib.pyplot as plt 
+
 
 import torch
 import torch.nn as nn
@@ -11,14 +15,34 @@ from torch.utils import data
 from torch.utils.data.sampler import SubsetRandomSampler
 
 
-import Dataset
+from dataloader import dataset
 from models import siameseModel, faceNet
+
+
+
+
+def save_loss_image(train_loss, val_loss, epoch, model_save_name, model_save_directory):
+
+	fig = plt.figure(figsize=(15, 15))
+
+	plt.plot([k for k in range(1, epoch + 1)], train_loss, label = "Training Loss")
+	plt.plot([k for k in range(1, epoch + 1)], val_loss, label = "Validation Loss")
+	plt.legend()
+	plt.title(model_save_name)
+	fig.canvas.draw()
+	img = np.fromstring(fig.canvas.tostring_rgb(), dtype=np.uint8, sep='')
+	img  = img.reshape(fig.canvas.get_width_height()[::-1] + (3,))
+	img = cv2.cvtColor(img,cv2.COLOR_RGB2BGR)
+	cv2.imwrite(os.path.join(model_save_directory, f"{model_save_name}_loss.jpg"), img)
+
+	plt.close()
+
 
 
 def trainTestSplit(args):
 
-	trainDataset = Dataset.ImageTriplet(args, train=True)
-	valDataset = Dataset.ImageTriplet(args, train=True)
+	trainDataset = dataset.ImageTriplet(args, train=True)
+	valDataset = dataset.ImageTriplet(args, train=True)
 
 	valid_size = 0.2
 	num_train = len(trainDataset)
@@ -37,6 +61,7 @@ def trainTestSplit(args):
 
 
 def extractLoss(model, criterion, inputs, device):
+
 	anchor = model(inputs[0].to(device))
 	# print(anchor.shape)
 	positive = model(inputs[1].to(device))
@@ -46,21 +71,26 @@ def extractLoss(model, criterion, inputs, device):
 
 
 
+def save_model(model, train_loss, val_loss, epoch):
+	save_loss_image(train_loss, val_loss, epoch, "models", "save_models")
+
+
+
 def trainFaceRec(args):
 
 	if args['validationFolder'] is not None:
-		trainDataset = Dataset.ImageTriplet(args, train=True)
+		trainDataset = dataset.ImageTriplet(args, train=True)
 		trainDataLoader = data.DataLoader(trainDataset, batch_size=args['batch_size'], shuffle=True)
 
-		valDataset = Dataset.ImageTriplet(args, train=False)
+		valDataset = dataset.ImageTriplet(args, train=False)
 		valDataLoader = data.DataLoader(valDataset, batch_size=args['batch_size'], shuffle=True)
 
 	else:
 		trainDataLoader, valDataLoader = trainTestSplit(args)
 
 	# model = siameseModel.SiameseNetwork(args)
-	# model = faceNet.FaceNet(args)
-	model = faceNet.InceptionResnetV1(args)
+	model = faceNet.FaceNet(args)
+	# model = faceNet.InceptionResnetV1(args)
 	print(model)
 
 	criterion = nn.TripletMarginLoss(margin=0.2)
@@ -73,6 +103,7 @@ def trainFaceRec(args):
 	trainLosses = []
 	valLosses = []
 	for epoch in range(1, args['epochs'] + 1):
+		model.train()
 		with tqdm(trainDataLoader, unit=" batch", desc="Training", leave=False) as tepoch:
 			trainLoss = []
 			for i, inputs in enumerate(tepoch):
@@ -103,17 +134,24 @@ def trainFaceRec(args):
 			val_loss = np.mean(valLoss)
 
 		print(f"Epochs {epoch}\t Training Loss: {train_loss}\t Testing Loss: {val_loss}")
+		trainLosses.append(train_loss)
+		valLosses.append(val_loss)
+
+		save_model(model, trainLosses, valLosses, epoch)
 
 
 if __name__ == '__main__':
 	args={
-	"trainFolder": r"E:\dataset\Face\dataset3\train",
-	"validationFolder": r"E:\dataset\Face\dataset3\val",
+	# "trainFolder": r"E:\dataset\Face\dataset3\train",
+	# "validationFolder": r"E:\dataset\Face\dataset3\val",
+	"validationFolder": r"E:\dataset\Face\cropped_images",
+	"trainFolder": r"E:\dataset\Face\dataset",
 	# "validationFolder": None,
-	"imageSize": 220,
+	"imageSize": 128,
 	"epochs": 100,
-	'batch_size': 8,
-	"rgb": True
+	'batch_size': 64,
+	"rgb": True,
+	'fixedPairs': False,
 	}
 
 	trainFaceRec(args)
