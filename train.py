@@ -64,6 +64,7 @@ def extractLoss(model, criterion, inputs, device):
 
 	anchor = model(inputs[0].to(device))
 	# print(anchor.shape)
+	# print(anchor.shape)
 	positive = model(inputs[1].to(device))
 	negative = model(inputs[2].to(device))
 	loss = criterion(anchor, positive, negative)
@@ -72,7 +73,12 @@ def extractLoss(model, criterion, inputs, device):
 
 
 def save_model(model, train_loss, val_loss, epoch):
-	save_loss_image(train_loss, val_loss, epoch, "models", "save_models")
+	modelSaveFolder = "save_models"
+	if not os.path.isdir(modelSaveFolder):
+		os.mkdir(modelSaveFolder)
+	if min(val_loss) == val_loss[-1]:
+		torch.save(model.state_dict(), os.path.join(modelSaveFolder, "models.pth"))
+	save_loss_image(train_loss, val_loss, epoch, "models", modelSaveFolder)
 
 
 
@@ -89,8 +95,9 @@ def trainFaceRec(args):
 		trainDataLoader, valDataLoader = trainTestSplit(args)
 
 	# model = siameseModel.SiameseNetwork(args)
-	model = faceNet.FaceNet(args)
-	# model = faceNet.InceptionResnetV1(args)
+	# model = faceNet.FaceNet(args)
+	# model = faceNet.FaceNet2(args)
+	model = faceNet.InceptionResnetV1(args)
 	print(model)
 
 	criterion = nn.TripletMarginLoss(margin=0.2)
@@ -140,15 +147,24 @@ def trainFaceRec(args):
 		save_model(model, trainLosses, valLosses, epoch)
 
 
+	model.load_state_dict(torch.load(os.path.join("save_models", "models.pth")))
+	model.to("cpu")
+	model.eval()
+
+	dummy_input = torch.randn(1, 3, args['imageSize'], args['imageSize'])
+	torch.onnx.export(model, dummy_input, 
+		os.path.join("save_models", "models.onnx"), verbose=True)
+
+
 if __name__ == '__main__':
 	args={
 	# "trainFolder": r"E:\dataset\Face\dataset3\train",
 	# "validationFolder": r"E:\dataset\Face\dataset3\val",
-	"validationFolder": r"E:\dataset\Face\cropped_images",
+	"validationFolder": r"E:\dataset\Face\Bolly\Faces",
 	"trainFolder": r"E:\dataset\Face\dataset",
 	# "validationFolder": None,
 	"imageSize": 128,
-	"epochs": 100,
+	"epochs": 20,
 	'batch_size': 64,
 	"rgb": True,
 	'fixedPairs': False,

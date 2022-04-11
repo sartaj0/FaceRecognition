@@ -3,6 +3,8 @@ import torch.nn as nn
 import torch.nn.functional as F 
 
 
+from .modifiedFaceNet import FaceNet2
+
 class FaceNet(nn.Module):
 	"""
 	FaceNet
@@ -62,7 +64,7 @@ class BasicConv2d(nn.Module):
 		self.convBatchRelu = nn.Sequential(
 			nn.Conv2d(inChannels, outChannels, kernel_size=kernel_size, stride=stride, padding=padding),
 			nn.BatchNorm2d(outChannels),
-			nn.ReLU()
+			nn.ReLU(),
 			)
 
 	def forward(self, x):
