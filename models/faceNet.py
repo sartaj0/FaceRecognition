@@ -45,12 +45,12 @@ class FaceNet(nn.Module):
 
 			nn.Flatten(),
 			nn.Linear(4096, 128),
-			# nn.ReLU()
+			nn.ReLU()
 			)
 
 	def forward(self, x):
 		x = self.conv(x)
-		x = F.normalize(x, p=2, dim=1)
+		# x = F.normalize(x, p=2, dim=1)
 		
 		return x 
 

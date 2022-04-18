@@ -24,10 +24,10 @@ from torchsummary import summary
 
 def save_loss_image(train_loss, val_loss, epoch, model_save_name, model_save_directory):
 
-	fig = plt.figure(figsize=(15, 15))
+	fig = plt.figure(figsize=(12, 12))
 
-	plt.plot([k for k in range(1, epoch + 1)], train_loss, label = "Training Loss")
-	plt.plot([k for k in range(1, epoch + 1)], val_loss, label = "Validation Loss")
+	plt.plot([k for k in range(1, epoch + 1)], train_loss, label = "Training Loss", marker="o")
+	plt.plot([k for k in range(1, epoch + 1)], val_loss, label = "Validation Loss", marker="o")
 	plt.legend()
 	plt.title(model_save_name)
 	fig.canvas.draw()
@@ -101,10 +101,9 @@ def trainFaceRec(args):
 	model = faceNet.InceptionResnetV1(args)
 	# print(model)
 
-	criterion = nn.TripletMarginLoss(margin=2.0)
-	optimizer = optim.Adam(model.parameters(), lr=0.001, weight_decay=0.0001)
-	# optimizer = optim.SGD(params=model.parameters(), lr=0.05, momentum=0.9, dampening=0, nesterov=False, weight_decay=1e-5)
-	# optimizer = optim.SGD(params=model.parameters(), lr=0.05, momentum=0.9, weight_decay=1e-5)
+	criterion = nn.TripletMarginLoss(margin=0.2)
+	# optimizer = optim.Adam(model.parameters(), lr=0.0001, weight_decay=0.001)
+	optimizer = optim.SGD(params=model.parameters(), lr=0.05, momentum=0.9, dampening=0, nesterov=False, weight_decay=1e-5)
 	device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
 	model.to(device)
@@ -164,9 +163,9 @@ if __name__ == '__main__':
 	"validationFolder": r"E:\dataset\Face\Bolly\Faces",
 	"trainFolder": r"E:\dataset\Face\lfw_224",
 	# "validationFolder": None,
-	"imageSize": 128,
-	"epochs": 100,
-	'batch_size': 32,
+	"imageSize": 160,
+	"epochs": 25,
+	'batch_size': 16,
 	"rgb": True,
 	'fixedPairs': False,
 	}

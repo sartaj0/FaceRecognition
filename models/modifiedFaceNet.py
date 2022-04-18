@@ -23,9 +23,9 @@ class BasicConv2d(nn.Module):
 
 class FaceNet2(nn.Module):
 	"""docstring for FaceNet2"""
-	def __init__(self, arg):
+	def __init__(self, args):
 		super(FaceNet2, self).__init__()
-		self.arg = arg
+		self.args = args
 
 		self.conv = nn.Sequential(
 			BasicConv2d(3, 64, kernel_size=(7, 7), stride=2, padding=3),
@@ -52,10 +52,12 @@ class FaceNet2(nn.Module):
 			nn.MaxPool2d(kernel_size=(3, 3), stride=2, padding=1),
 
 			nn.Flatten(),
-			nn.Dropout(0.5),
+			# nn.Dropout(0.5),
 			nn.Linear(1024, 128),
 
 			)
+		# inFeature = self.conv(torch.randn(1, 3, args['imageSize'], args['imageSize'])).shape[1]
+		# self.conv.add_module("last_layer", nn.Linear(inFeature, 128))
 	def forward(self, x):
 		x = self.conv(x)
 		x = F.normalize(x, p=2, dim=1)
