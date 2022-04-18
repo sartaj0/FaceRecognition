@@ -145,16 +145,23 @@ def viewInput(tensorTuple):
 		images.append(image)
 
 	image = cv2.hconcat(images)
-	cv2.imshow("image", image)
-	cv2.waitKey(0)
+	image = cv2.cvtColor(image, cv2.COLOR_RGB2BGR)
+	return image
+	
 
 if __name__ == '__main__':
 	args = {
 	"trainFolder": r"E:\dataset\Face\dataset",
-	"imageSize": 128,
+	"imageSize": 220,
 	"rgb": True,
-	"fixedPairs": False,
+	"fixedPairs": True,
 	}
 	dataset = ImageTriplet(args, train=True)
 	print(len(dataset))
-	viewInput(dataset[0])
+	for i in range(len(dataset)):
+		# image = viewInput(dataset[0])
+		image = viewInput(dataset[i])
+		
+		cv2.imshow("image", image)
+		if cv2.waitKey(0) == ord('q'):
+			break

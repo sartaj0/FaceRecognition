@@ -52,7 +52,9 @@ class FaceNet2(nn.Module):
 			nn.MaxPool2d(kernel_size=(3, 3), stride=2, padding=1),
 
 			nn.Flatten(),
+			nn.Dropout(0.5),
 			nn.Linear(1024, 128),
+
 			)
 	def forward(self, x):
 		x = self.conv(x)

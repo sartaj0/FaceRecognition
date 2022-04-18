@@ -19,6 +19,7 @@ from dataloader import dataset
 from models import siameseModel, faceNet
 
 
+from torchsummary import summary
 
 
 def save_loss_image(train_loss, val_loss, epoch, model_save_name, model_save_directory):
@@ -98,14 +99,16 @@ def trainFaceRec(args):
 	# model = faceNet.FaceNet(args)
 	# model = faceNet.FaceNet2(args)
 	model = faceNet.InceptionResnetV1(args)
-	print(model)
+	# print(model)
 
-	criterion = nn.TripletMarginLoss(margin=0.2)
-	optimizer = optim.Adam(model.parameters(), lr=0.0001, weight_decay=0.001)
+	criterion = nn.TripletMarginLoss(margin=2.0)
+	optimizer = optim.Adam(model.parameters(), lr=0.001, weight_decay=0.0001)
 	# optimizer = optim.SGD(params=model.parameters(), lr=0.05, momentum=0.9, dampening=0, nesterov=False, weight_decay=1e-5)
+	# optimizer = optim.SGD(params=model.parameters(), lr=0.05, momentum=0.9, weight_decay=1e-5)
 	device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
 	model.to(device)
+	summary(model, (3, args['imageSize'], args['imageSize']))
 
 	trainLosses = []
 	valLosses = []
@@ -158,14 +161,12 @@ def trainFaceRec(args):
 
 if __name__ == '__main__':
 	args={
-	# "trainFolder": r"E:\dataset\Face\dataset3\train",
-	# "validationFolder": r"E:\dataset\Face\dataset3\val",
 	"validationFolder": r"E:\dataset\Face\Bolly\Faces",
-	"trainFolder": r"E:\dataset\Face\dataset",
+	"trainFolder": r"E:\dataset\Face\lfw_224",
 	# "validationFolder": None,
 	"imageSize": 128,
-	"epochs": 20,
-	'batch_size': 64,
+	"epochs": 100,
+	'batch_size': 32,
 	"rgb": True,
 	'fixedPairs': False,
 	}
