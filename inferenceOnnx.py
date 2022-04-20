@@ -53,16 +53,16 @@ if __name__ == '__main__':
 
 	facenet = cv2.dnn.readNetFromONNX("save_models/models.onnx")
 
-	img1 = cv2.imread(r"E:\Projects\FaceRecognition\test_images\4.jpg")
+	img1 = cv2.imread(r"E:\Projects\FaceRecognition\test_images\1.jpg")
 	face1 = extract_face(faceDetector, img1)
 	vector1 = detect_vector(facenet, face1, imgSize)
 
-	img2 = cv2.imread(r"E:\Projects\FaceRecognition\test_images\3.jpg")
+	img2 = cv2.imread(r"E:\Projects\FaceRecognition\test_images\2.jpg")
 	face2 = extract_face(faceDetector, img2)
 	vector2 = detect_vector(facenet, face2, imgSize)
 
 
-	img3 = cv2.imread(r"E:\Projects\FaceRecognition\test_images\2.jpg")
+	img3 = cv2.imread(r"E:\Projects\FaceRecognition\test_images\3.jpg")
 	face3 = extract_face(faceDetector, img3)
 	vector3 = detect_vector(facenet, face3, imgSize)
 
@@ -74,7 +74,7 @@ if __name__ == '__main__':
 	difference1 = np.sum(np.power(vector1 - vector2, 2))
 	difference2 = np.sum(np.power(vector1 - vector3, 2))
 	print(difference1, difference2)
-	print(max(difference1 - difference2 + 2, 0))
+	print(max(difference1 - difference2 + 0.2, 0))
 	# print(max(difference1 - difference2 , 0))
 	# print(max(difference2 - difference1 , 0))
 

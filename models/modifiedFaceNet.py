@@ -49,15 +49,21 @@ class FaceNet2(nn.Module):
 			BasicConv2d(256, 256, kernel_size=(1, 1), stride=1),
 			BasicConv2d(256, 256, kernel_size=(3, 3), stride=1, padding=1),
 
-			nn.MaxPool2d(kernel_size=(3, 3), stride=2, padding=1),
+			nn.AdaptiveAvgPool2d(1),
+
+			# nn.MaxPool2d(kernel_size=(3, 3), stride=2, padding=1),
 
 			nn.Flatten(),
 			# nn.Dropout(0.5),
-			nn.Linear(1024, 128),
+			# nn.Linear(1024, 128),
 
 			)
-		# inFeature = self.conv(torch.randn(1, 3, args['imageSize'], args['imageSize'])).shape[1]
-		# self.conv.add_module("last_layer", nn.Linear(inFeature, 128))
+		inFeature = self.conv(torch.randn(1, 3, args['imageSize'], args['imageSize'])).shape[1]
+		self.conv.add_module("last_layer", nn.Sequential(
+			nn.Linear(inFeature, 128),
+			nn.BatchNorm1d(128)
+			)
+		)
 	def forward(self, x):
 		x = self.conv(x)
 		x = F.normalize(x, p=2, dim=1)

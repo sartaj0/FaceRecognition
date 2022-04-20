@@ -95,14 +95,21 @@ def trainFaceRec(args):
 	else:
 		trainDataLoader, valDataLoader = trainTestSplit(args)
 
-	# model = siameseModel.SiameseNetwork(args)
-	# model = faceNet.FaceNet(args)
-	# model = faceNet.FaceNet2(args)
-	model = faceNet.InceptionResnetV1(args)
+	if args['modelArchitecture'] == 'siamese':
+		model = siameseModel.SiameseNetwork(args)
+	elif args['modelArchitecture'] == "facenetnn1":
+		model = faceNet.FaceNet(args)
+	elif args['modelArchitecture'] == 'inceptionfacenet':
+		model = faceNet.InceptionResnetV1(args)
+	elif args['modelArchitecture'] == "modifiedfacenet":
+		model = faceNet.FaceNet2(args)
+	else:
+		raise TypeError("Select Approriate model")
+	# 
 	# print(model)
 
 	criterion = nn.TripletMarginLoss(margin=0.2)
-	# optimizer = optim.Adam(model.parameters(), lr=0.0001, weight_decay=0.001)
+	# optimizer = optim.Adam(model.parameters(), lr=0.000087, weight_decay=0.001)
 	optimizer = optim.SGD(params=model.parameters(), lr=0.05, momentum=0.9, dampening=0, nesterov=False, weight_decay=1e-5)
 	device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
@@ -161,13 +168,14 @@ def trainFaceRec(args):
 if __name__ == '__main__':
 	args={
 	"validationFolder": r"E:\dataset\Face\Bolly\Faces",
-	"trainFolder": r"E:\dataset\Face\lfw_224",
+	"trainFolder": r"E:\dataset\Face\Bolly\bolly100",
 	# "validationFolder": None,
-	"imageSize": 160,
+	"imageSize": 128,
 	"epochs": 25,
-	'batch_size': 16,
+	'batch_size': 64,
 	"rgb": True,
 	'fixedPairs': False,
+	"modelArchitecture": "facenetnn1",
 	}
 
 	trainFaceRec(args)
